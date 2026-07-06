@@ -26,6 +26,7 @@ The baseline follows these official n8n patterns:
 - File-based binary data for the single-node v1.
 - Redis present for future queue mode.
 - Human review gates before publishing.
+- CLI import of inactive workflows for review before activation.
 
 ## Recommended project mode
 
@@ -286,6 +287,66 @@ What it does:
 7. runs healthcheck;
 8. prints local access URLs.
 
+## Check connection
+
+Run:
+
+```bash
+make check-n8n
+```
+
+Or:
+
+```bash
+bash scripts/check-n8n-connection.sh
+```
+
+This checks:
+
+- local files;
+- Docker containers;
+- n8n local HTTP response;
+- GPT gateway health;
+- Compose status.
+
+## Import base workflows
+
+Run:
+
+```bash
+make import-n8n-workflows
+```
+
+Or:
+
+```bash
+bash scripts/import-n8n-workflows.sh
+```
+
+The import command uses:
+
+```bash
+docker exec nvf-n8n n8n import:workflow --separate --input=/workflows/importable
+```
+
+The n8n CLI deactivates imported workflows by default unless `--activeState=fromJson` is used. We intentionally keep workflows inactive for review before activation.
+
+## Base workflows created by this repo
+
+See:
+
+```text
+docs/N8N_CREATED_WORKFLOWS.md
+```
+
+Expected workflows after import:
+
+```text
+NVF 01 - GPT Video Request Intake
+NVF 02 - Human Review Gate
+NVF 03 - Publish Assist Package
+```
+
 ## Manual setup
 
 ```bash
@@ -334,7 +395,7 @@ http://127.0.0.1:5678
 
 ## First workflow to create manually in n8n
 
-Create this first because it proves the architecture without rendering video yet.
+The import command already creates three base workflows. If you want to create the first one manually instead, start with this:
 
 ### HotLead Video Request Intake
 
@@ -384,9 +445,12 @@ cat media/scripts/hotlead-test-job.json
 
 ## Next implementation steps
 
-1. Import or manually create the Video Request Intake workflow.
-2. Add a review form/wait gate.
-3. Create a job file schema in `docs/JOB_SCHEMA.md`.
-4. Add a small worker API for render jobs.
-5. Add MinIO/S3 storage for approved renders.
-6. Add analytics capture after manual publishing.
+1. Run `make check-n8n`.
+2. Run `make import-n8n-workflows`.
+3. Review imported workflows in the UI.
+4. Activate only the intake workflow after review.
+5. Add Wait/Form review gate.
+6. Create a job file schema in `docs/JOB_SCHEMA.md`.
+7. Add a small worker API for render jobs.
+8. Add MinIO/S3 storage for approved renders.
+9. Add analytics capture after manual publishing.
