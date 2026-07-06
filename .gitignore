@@ -24,6 +24,10 @@ __pycache__/
 .venv/
 venv/
 
+# Backups
+backups/*
+!backups/.gitkeep
+
 # Media outputs
 media/raw/*
 media/renders/*
