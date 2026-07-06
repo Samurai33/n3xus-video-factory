@@ -11,6 +11,7 @@ A production-oriented foundation for turning ideas, long-form content and produc
 [![Repo Size](https://img.shields.io/github/repo-size/Samurai33/n3xus-video-factory?style=flat-square&logo=github)](https://github.com/Samurai33/n3xus-video-factory)
 [![Top Language](https://img.shields.io/github/languages/top/Samurai33/n3xus-video-factory?style=flat-square)](https://github.com/Samurai33/n3xus-video-factory)
 [![Docker Compose](https://img.shields.io/badge/orchestration-Docker%20Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](infra/docker-compose.yml)
+[![n8n](https://img.shields.io/badge/control%20plane-n8n-EA4B71?style=flat-square&logo=n8n&logoColor=white)](docs/N8N_VIDEO_FACTORY.md)
 [![NAF](https://img.shields.io/badge/NAF-1%20Foundation-7C3AED?style=flat-square)](docs/NAF.md)
 [![Security](https://img.shields.io/badge/security-human%20review%20required-111827?style=flat-square)](docs/SECURITY.md)
 
@@ -111,7 +112,7 @@ Publish Assist Engine
 Analytics Engine
 ```
 
-More details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/ENGINE.md`](docs/ENGINE.md).
+More details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/ENGINE.md`](docs/ENGINE.md), and [`docs/N8N_VIDEO_FACTORY.md`](docs/N8N_VIDEO_FACTORY.md).
 
 ---
 
@@ -172,8 +173,8 @@ See: [`docs/NAF.md`](docs/NAF.md).
 ├── infra/                       # Docker Compose and infrastructure files
 ├── media/                       # Raw, scripted, rendered and approved media paths
 ├── prompts/                     # Hooks, scripts, captions and CTA prompt libraries
-├── scripts/                     # Healthcheck and backup scripts
-├── workflows/                   # n8n workflow placeholders
+├── scripts/                     # Healthcheck, backup and bootstrap scripts
+├── workflows/                   # n8n workflow placeholders and blueprints
 ├── AGENTS.md                    # Human-readable agent guide
 ├── CLAUDE.md                    # Project memory for Claude Code
 ├── Makefile                     # Make-based operations
@@ -192,37 +193,28 @@ git clone https://github.com/Samurai33/n3xus-video-factory.git
 cd n3xus-video-factory
 ```
 
-### 2. Create local environment
+### 2. One-command n8n bootstrap
+
+On the target Linux VM:
+
+```bash
+bash scripts/bootstrap-n8n-video-factory.sh
+```
+
+Or with Make:
+
+```bash
+make bootstrap-n8n
+```
+
+This command creates `infra/.env` if missing, generates local secrets, validates Compose, starts the stack, runs healthcheck and prints local access URLs.
+
+### 3. Manual setup alternative
 
 ```bash
 cp infra/.env.example infra/.env
-```
-
-Edit `infra/.env` and replace placeholder values with strong local secrets.
-
-Required values:
-
-```env
-POSTGRES_PASSWORD=change-me-strong-password
-MINIO_ROOT_PASSWORD=change-me-strong-password
-N8N_ENCRYPTION_KEY=change-me-32-plus-chars-random
-```
-
-### 3. Validate Compose
-
-```bash
+# edit infra/.env with strong local secrets
 make compose-config
-```
-
-Without Make:
-
-```bash
-docker compose -f infra/docker-compose.yml --env-file infra/.env config
-```
-
-### 4. Start the stack
-
-```bash
 make up
 make ps
 ```
@@ -230,6 +222,7 @@ make ps
 Without Make:
 
 ```bash
+docker compose -f infra/docker-compose.yml --env-file infra/.env config
 docker compose -f infra/docker-compose.yml --env-file infra/.env up -d
 docker compose -f infra/docker-compose.yml --env-file infra/.env ps
 ```
@@ -242,6 +235,7 @@ Common commands:
 
 ```bash
 make help
+make bootstrap-n8n
 make env-check
 make compose-config
 make up
@@ -254,6 +248,7 @@ make backup
 Direct script execution:
 
 ```bash
+bash scripts/bootstrap-n8n-video-factory.sh
 bash scripts/healthcheck.sh
 bash scripts/backup.sh
 ```
@@ -293,6 +288,7 @@ Skills include repeatable procedures such as:
 
 - `/repo-healthcheck`
 - `/run-local-ops`
+- `/setup-n8n-video-factory`
 - `/deploy-compose-stack`
 - `/backup-media-store`
 - `/create-shorts-batch`
@@ -315,7 +311,8 @@ This project is built around a conservative operating model:
 - no public panel exposure by default;
 - local-first and Tailscale-first administration;
 - official APIs or manual approval flows preferred;
-- generated media and backups are excluded from Git.
+- generated media and backups are excluded from Git;
+- heavy rendering should run in dedicated workers, not inside the n8n main process.
 
 See: [`docs/SECURITY.md`](docs/SECURITY.md).
 
@@ -332,11 +329,14 @@ See: [`docs/SECURITY.md`](docs/SECURITY.md).
 - [x] Docker Compose baseline added
 - [x] NAF documentation added
 - [x] Healthcheck and backup scripts added
+- [x] n8n setup guide and bootstrap script added
 
 ### NAF-2 Operable
 
 - [ ] Validate stack on the target VM
 - [ ] Confirm n8n + Postgres + Redis + MinIO startup
+- [ ] Create first Video Request Intake workflow
+- [ ] Add review gate workflow
 - [ ] Add real video worker profile
 - [ ] Add Whisper/transcription workflow
 - [ ] Add render validation workflow
@@ -358,6 +358,8 @@ See: [`docs/SECURITY.md`](docs/SECURITY.md).
 | Document | Purpose |
 |---|---|
 | [`docs/NAF.md`](docs/NAF.md) | N3XUS Agentic Framework |
+| [`docs/N8N_VIDEO_FACTORY.md`](docs/N8N_VIDEO_FACTORY.md) | n8n setup, real workflow patterns and one-command bootstrap |
+| [`workflows/n8n-blueprints/README.md`](workflows/n8n-blueprints/README.md) | Practical n8n workflow blueprints |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Infrastructure and system architecture |
 | [`docs/ENGINE.md`](docs/ENGINE.md) | Video Factory engine design |
 | [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Operational commands and procedures |
@@ -377,6 +379,7 @@ Branch: main
 Maturity: NAF-1 Foundation
 Next milestone: NAF-2 Operable
 Primary deployment target: Proxmox VM / Ubuntu Server 24.04 LTS
+Control plane: n8n single-main mode
 ```
 
 This is an early-stage foundation. It is not yet a complete video automation product, but the repository is structured to evolve into one through safe, versioned, agentic increments.
