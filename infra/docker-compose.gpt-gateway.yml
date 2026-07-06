@@ -1,0 +1,19 @@
+services:
+  n8n-gpt-gateway:
+    build:
+      context: ../gateway/n8n-control
+    container_name: nvf-n8n-gpt-gateway
+    restart: unless-stopped
+    environment:
+      PORT: ${GPT_GATEWAY_PORT:-8787}
+      GPT_GATEWAY_API_KEY: ${GPT_GATEWAY_API_KEY:?GPT_GATEWAY_API_KEY is required}
+      GPT_GATEWAY_REQUIRE_AUTH: ${GPT_GATEWAY_REQUIRE_AUTH:-true}
+      N8N_BASE_URL: ${N8N_BASE_URL:-http://n8n:5678}
+      N8N_API_KEY: ${N8N_API_KEY:-}
+      NVF_JOB_DIR: /media/scripts
+    volumes:
+      - ../media:/media
+    ports:
+      - "127.0.0.1:${GPT_GATEWAY_PORT:-8787}:8787"
+    networks:
+      - internal
