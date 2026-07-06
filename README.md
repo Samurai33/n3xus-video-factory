@@ -209,7 +209,16 @@ make bootstrap-n8n
 
 This command creates `infra/.env` if missing, generates local secrets, validates Compose, starts the stack, runs healthcheck and prints local access URLs.
 
-### 3. Manual setup alternative
+### 3. Import base n8n workflows
+
+```bash
+make check-n8n
+make import-n8n-workflows
+```
+
+This imports the three base workflows into n8n as inactive/draft workflows for review.
+
+### 4. Manual setup alternative
 
 ```bash
 cp infra/.env.example infra/.env
@@ -236,6 +245,9 @@ Common commands:
 ```bash
 make help
 make bootstrap-n8n
+make bootstrap-gpt-gateway
+make check-n8n
+make import-n8n-workflows
 make env-check
 make compose-config
 make up
@@ -249,6 +261,8 @@ Direct script execution:
 
 ```bash
 bash scripts/bootstrap-n8n-video-factory.sh
+bash scripts/check-n8n-connection.sh
+bash scripts/import-n8n-workflows.sh
 bash scripts/healthcheck.sh
 bash scripts/backup.sh
 ```
@@ -289,6 +303,8 @@ Skills include repeatable procedures such as:
 - `/repo-healthcheck`
 - `/run-local-ops`
 - `/setup-n8n-video-factory`
+- `/setup-gpt-n8n-control`
+- `/import-n8n-base-workflows`
 - `/deploy-compose-stack`
 - `/backup-media-store`
 - `/create-shorts-batch`
@@ -330,12 +346,14 @@ See: [`docs/SECURITY.md`](docs/SECURITY.md).
 - [x] NAF documentation added
 - [x] Healthcheck and backup scripts added
 - [x] n8n setup guide and bootstrap script added
+- [x] Base importable n8n workflows added
 
 ### NAF-2 Operable
 
 - [ ] Validate stack on the target VM
 - [ ] Confirm n8n + Postgres + Redis + MinIO startup
-- [ ] Create first Video Request Intake workflow
+- [ ] Import base n8n workflows on target VM
+- [ ] Review and activate Video Request Intake workflow
 - [ ] Add review gate workflow
 - [ ] Add real video worker profile
 - [ ] Add Whisper/transcription workflow
@@ -359,7 +377,11 @@ See: [`docs/SECURITY.md`](docs/SECURITY.md).
 |---|---|
 | [`docs/NAF.md`](docs/NAF.md) | N3XUS Agentic Framework |
 | [`docs/N8N_VIDEO_FACTORY.md`](docs/N8N_VIDEO_FACTORY.md) | n8n setup, real workflow patterns and one-command bootstrap |
+| [`docs/N8N_CREATED_WORKFLOWS.md`](docs/N8N_CREATED_WORKFLOWS.md) | Imported workflow list and validation |
+| [`workflows/importable/README.md`](workflows/importable/README.md) | Importable n8n workflow package |
 | [`workflows/n8n-blueprints/README.md`](workflows/n8n-blueprints/README.md) | Practical n8n workflow blueprints |
+| [`docs/GPT_TO_N8N_CONTROL.md`](docs/GPT_TO_N8N_CONTROL.md) | Custom GPT to n8n control layer |
+| [`docs/MCP_N8N_CONTROL.md`](docs/MCP_N8N_CONTROL.md) | Future MCP control plan |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Infrastructure and system architecture |
 | [`docs/ENGINE.md`](docs/ENGINE.md) | Video Factory engine design |
 | [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Operational commands and procedures |
