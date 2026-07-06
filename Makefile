@@ -1,4 +1,4 @@
-.PHONY: help env-check compose-config bootstrap-n8n bootstrap-gpt-gateway gateway-ps gateway-logs up down ps logs health backup git-status
+.PHONY: help env-check compose-config bootstrap-n8n bootstrap-gpt-gateway check-n8n import-n8n-workflows gateway-ps gateway-logs up down ps logs health backup git-status
 
 COMPOSE=docker compose -f infra/docker-compose.yml --env-file infra/.env
 COMPOSE_GATEWAY=docker compose -f infra/docker-compose.yml -f infra/docker-compose.gpt-gateway.yml --env-file infra/.env
@@ -8,6 +8,8 @@ help:
 	@echo ""
 	@echo "make bootstrap-n8n         One-command n8n stack bootstrap"
 	@echo "make bootstrap-gpt-gateway One-command GPT gateway bootstrap"
+	@echo "make check-n8n             Check n8n/gateway connectivity"
+	@echo "make import-n8n-workflows  Import base workflows into n8n"
 	@echo "make env-check             Validate required files"
 	@echo "make compose-config        Validate Docker Compose"
 	@echo "make up                    Start stack"
@@ -25,6 +27,12 @@ bootstrap-n8n:
 
 bootstrap-gpt-gateway:
 	bash scripts/bootstrap-gpt-n8n-gateway.sh
+
+check-n8n:
+	bash scripts/check-n8n-connection.sh
+
+import-n8n-workflows:
+	bash scripts/import-n8n-workflows.sh
 
 gateway-ps:
 	$(COMPOSE_GATEWAY) ps n8n-gpt-gateway
