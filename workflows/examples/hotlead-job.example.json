@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "jobId": "hotlead-20260706-0001",
+  "project": "HotLead",
+  "type": "short-video",
+  "pillar": "Pain",
+  "idea": "Empreendedores perdem vendas porque tratam todos os leads iguais",
+  "targetAudience": "empreendedores digitais",
+  "cta": "Comenta HOTLEAD",
+  "status": "needs-review",
+  "requiresHumanReview": true,
+  "autoPublish": false,
+  "createdAt": "2026-07-06T05:30:00.000Z",
+  "updatedAt": "2026-07-06T05:30:00.000Z",
+  "source": {
+    "system": "n8n",
+    "workflow": "NVF 01 - GPT Video Request Intake",
+    "endpoint": "/webhook/nvf-video-request"
+  },
+  "review": {
+    "decision": "pending",
+    "reviewer": null,
+    "reviewedAt": null,
+    "notes": null
+  },
+  "script": {
+    "hook": null,
+    "body": null,
+    "cta": null,
+    "caption": null,
+    "hashtags": []
+  },
+  "render": {
+    "status": "not-started",
+    "format": "vertical-9x16",
+    "durationTargetSeconds": 30,
+    "outputPath": null
+  },
+  "publish": {
+    "status": "not-ready",
+    "manualOnly": true,
+    "platforms": [],
+    "publishedAt": null
+  }
+}
