@@ -1,0 +1,150 @@
+{
+  "name": "NVF 01 - GPT Video Request Intake",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nvf-video-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9f7b5a4c-5d4d-4e1d-8a7f-video-request-webhook",
+      "name": "Video Request Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "nvf-video-request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "project",
+              "name": "project",
+              "value": "={{ $json.body.project || 'HotLead' }}",
+              "type": "string"
+            },
+            {
+              "id": "type",
+              "name": "type",
+              "value": "short-video",
+              "type": "string"
+            },
+            {
+              "id": "pillar",
+              "name": "pillar",
+              "value": "={{ $json.body.pillar || 'Pain' }}",
+              "type": "string"
+            },
+            {
+              "id": "idea",
+              "name": "idea",
+              "value": "={{ $json.body.idea }}",
+              "type": "string"
+            },
+            {
+              "id": "targetAudience",
+              "name": "targetAudience",
+              "value": "={{ $json.body.targetAudience || 'B2B founders and sales teams' }}",
+              "type": "string"
+            },
+            {
+              "id": "cta",
+              "name": "cta",
+              "value": "={{ $json.body.cta || 'Comment HOTLEAD' }}",
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "name": "status",
+              "value": "draft",
+              "type": "string"
+            },
+            {
+              "id": "requiresHumanReview",
+              "name": "requiresHumanReview",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "autoPublish",
+              "name": "autoPublish",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "createdAt",
+              "name": "createdAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8ef14a44-93fd-481a-8e1f-normalize-request",
+      "name": "Normalize Video Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, message: 'Draft video request accepted. Human review is required before rendering or publishing.', data: $json } }}",
+        "options": {}
+      },
+      "id": "e34a84d3-ea0a-4504-928a-respond-request",
+      "name": "Respond Draft Accepted",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Video Request Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Video Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Video Request": {
+      "main": [
+        [
+          {
+            "node": "Respond Draft Accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "d1a7f958-9a03-49ef-9b01-video-request-v1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Receives GPT/gateway video requests and returns a draft job response. Does not render or publish."
+  },
+  "tags": []
+}
