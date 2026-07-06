@@ -1,10 +1,11 @@
-.PHONY: help env-check compose-config up down ps logs health backup git-status
+.PHONY: help env-check compose-config bootstrap-n8n up down ps logs health backup git-status
 
 COMPOSE=docker compose -f infra/docker-compose.yml --env-file infra/.env
 
 help:
 	@echo "N3xus Video Factory commands"
 	@echo ""
+	@echo "make bootstrap-n8n   One-command n8n stack bootstrap"
 	@echo "make env-check       Validate required files"
 	@echo "make compose-config  Validate Docker Compose"
 	@echo "make up              Start stack"
@@ -14,6 +15,9 @@ help:
 	@echo "make health          Run healthcheck script"
 	@echo "make backup          Run backup script"
 	@echo "make git-status      Show Git status"
+
+bootstrap-n8n:
+	bash scripts/bootstrap-n8n-video-factory.sh
 
 env-check:
 	@test -f infra/docker-compose.yml && echo "OK infra/docker-compose.yml" || (echo "MISSING infra/docker-compose.yml" && exit 1)
