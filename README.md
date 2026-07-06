@@ -2,7 +2,9 @@
 
 **Fábrica self-hosted de vídeos curtos para HotLead, N3XUS e futuros clientes.**
 
-Este repositório organiza uma infraestrutura agentic-first para criar, cortar, renderizar, revisar e operar vídeos verticais em escala usando uma base gratuita/self-hosted.
+Este repositório organiza uma infraestrutura **agentic-first** para criar, cortar, renderizar, revisar e operar vídeos verticais em escala usando uma base gratuita/self-hosted.
+
+Agora ele também inaugura o **N3XUS Agentic Framework (NAF)**: um padrão reutilizável para projetos N3XUS com memória, agents, skills, docs, infra, scripts e validação contínua.
 
 ## Objetivo
 
@@ -13,7 +15,8 @@ Criar uma máquina de conteúdo com padrão enterprise/minimal/tech, focada em:
 - geração de variações de hooks, roteiros e CTAs;
 - automação com revisão humana;
 - infraestrutura local em Proxmox;
-- agentes e skills no padrão Claude Code.
+- agentes e skills no padrão Claude Code;
+- framework agentic reutilizável para futuros projetos N3XUS.
 
 ## Arquitetura v1
 
@@ -28,7 +31,32 @@ Proxmox
     ├── MinIO
     ├── FFmpeg worker
     ├── Video tools/workers
+    ├── scripts de operação
     └── Claude agents + skills
+```
+
+## NAF — N3XUS Agentic Framework
+
+O NAF define como projetos N3XUS devem nascer e evoluir.
+
+```text
+Project Memory  -> CLAUDE.md
+Agent Layer     -> .claude/agents/
+Skill Layer     -> .claude/skills/
+Docs Layer      -> docs/
+Ops Layer       -> infra/ + scripts/ + workflows/
+```
+
+Nível atual:
+
+```text
+NAF-1 Foundation
+```
+
+Próximo alvo:
+
+```text
+NAF-2 Operável
 ```
 
 ## Estrutura
@@ -37,11 +65,14 @@ Proxmox
 .
 ├── CLAUDE.md
 ├── AGENTS.md
+├── Makefile
+├── Taskfile.yml
 ├── docs/
 ├── infra/
 ├── media/
-├── workflows/
 ├── prompts/
+├── scripts/
+├── workflows/
 └── .claude/
     ├── agents/
     └── skills/
@@ -72,9 +103,24 @@ Proxmox
 cp infra/.env.example infra/.env
 # edite infra/.env com senhas fortes
 
+make compose-config
+make up
+make ps
+```
+
+Sem Make:
+
+```bash
 docker compose -f infra/docker-compose.yml --env-file infra/.env config
 docker compose -f infra/docker-compose.yml --env-file infra/.env up -d
 docker compose -f infra/docker-compose.yml --env-file infra/.env ps
+```
+
+## Healthcheck e backup
+
+```bash
+bash scripts/healthcheck.sh
+bash scripts/backup.sh
 ```
 
 ## Acesso local
@@ -94,7 +140,7 @@ Este repo foi preparado para operar com Claude Code:
 - `CLAUDE.md`: memória operacional do projeto.
 - `.claude/agents/`: especialistas por domínio.
 - `.claude/skills/`: procedimentos repetíveis.
-- `docs/`: arquitetura, operação, segurança e pipeline.
+- `docs/`: arquitetura, operação, segurança, engine e framework.
 
 ## Roadmap curto
 
@@ -104,7 +150,8 @@ Este repo foi preparado para operar com Claude Code:
 4. Criar primeiro lote HotLead.
 5. Implementar fluxo n8n de revisão.
 6. Conectar storage/backup.
+7. Evoluir de NAF-1 para NAF-2.
 
 ## Status
 
-Base v1 criada para evolução incremental.
+Base v2 criada para evolução incremental.
