@@ -1,0 +1,128 @@
+{
+  "name": "NVF 03 - Publish Assist Package",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "4a460e53-5d8f-4d74-publish-manual-trigger",
+      "name": "Manual Publish Assist Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "title",
+              "name": "title",
+              "value": "HotLead: melhor sinal, menos lead frio",
+              "type": "string"
+            },
+            {
+              "id": "caption",
+              "name": "caption",
+              "value": "Você não precisa de mais leads. Precisa saber quais estão prontos para comprar.",
+              "type": "string"
+            },
+            {
+              "id": "hashtags",
+              "name": "hashtags",
+              "value": "#HotLead #SaaS #VendasB2B #Prospecção #IA",
+              "type": "string"
+            },
+            {
+              "id": "cta",
+              "name": "cta",
+              "value": "Comenta HOTLEAD",
+              "type": "string"
+            },
+            {
+              "id": "publishingMode",
+              "name": "publishingMode",
+              "value": "manual-or-official-api-only",
+              "type": "string"
+            },
+            {
+              "id": "requiresHumanReview",
+              "name": "requiresHumanReview",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "autoPublish",
+              "name": "autoPublish",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "checklist",
+              "name": "checklist",
+              "value": "Hook nos 2s iniciais; legenda legível; áudio ok; CTA único; sem promessa enganosa; sem ativo sem direito; revisão humana concluída.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e29b80c0-a83d-49ed-build-publish-package",
+      "name": "Build Publish Package",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "58c0e2da-a94e-4f1f-publish-placeholder",
+      "name": "Manual Publishing Placeholder",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        800,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Publish Assist Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Publish Package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Publish Package": {
+      "main": [
+        [
+          {
+            "node": "Manual Publishing Placeholder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "e1ec60a2-publish-assist-v1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Creates a safe publishing package. Does not auto-publish."
+  },
+  "tags": []
+}
