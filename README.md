@@ -1,24 +1,78 @@
-# N3xus Video Factory
+<div align="center">
 
-**Fábrica self-hosted de vídeos curtos para HotLead, N3XUS e futuros clientes.**
+# N3XUS Video Factory
 
-Este repositório organiza uma infraestrutura **agentic-first** para criar, cortar, renderizar, revisar e operar vídeos verticais em escala usando uma base gratuita/self-hosted.
+**Self-hosted agentic video factory for Shorts, Reels, TikTok and growth experiments.**
 
-Agora ele também inaugura o **N3XUS Agentic Framework (NAF)**: um padrão reutilizável para projetos N3XUS com memória, agents, skills, docs, infra, scripts e validação contínua.
+A production-oriented foundation for turning ideas, long-form content and product demos into short-form video assets with automation, human review, observability and reusable agentic workflows.
 
-## Objetivo
+[![Validate Compose](https://github.com/Samurai33/n3xus-video-factory/actions/workflows/validate-compose.yml/badge.svg?branch=main)](https://github.com/Samurai33/n3xus-video-factory/actions/workflows/validate-compose.yml)
+[![Last Commit](https://img.shields.io/github/last-commit/Samurai33/n3xus-video-factory/main?style=flat-square&logo=github)](https://github.com/Samurai33/n3xus-video-factory/commits/main)
+[![Repo Size](https://img.shields.io/github/repo-size/Samurai33/n3xus-video-factory?style=flat-square&logo=github)](https://github.com/Samurai33/n3xus-video-factory)
+[![Top Language](https://img.shields.io/github/languages/top/Samurai33/n3xus-video-factory?style=flat-square)](https://github.com/Samurai33/n3xus-video-factory)
+[![Docker Compose](https://img.shields.io/badge/orchestration-Docker%20Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](infra/docker-compose.yml)
+[![NAF](https://img.shields.io/badge/NAF-1%20Foundation-7C3AED?style=flat-square)](docs/NAF.md)
+[![Security](https://img.shields.io/badge/security-human%20review%20required-111827?style=flat-square)](docs/SECURITY.md)
 
-Criar uma máquina de conteúdo com padrão enterprise/minimal/tech, focada em:
+</div>
 
-- Shorts, Reels, TikTok e LinkedIn videos;
-- clipping de vídeos longos;
-- geração de variações de hooks, roteiros e CTAs;
-- automação com revisão humana;
-- infraestrutura local em Proxmox;
-- agentes e skills no padrão Claude Code;
-- framework agentic reutilizável para futuros projetos N3XUS.
+---
 
-## Arquitetura v1
+## Table of Contents
+
+- [Overview](#overview)
+- [Why this exists](#why-this-exists)
+- [Architecture](#architecture)
+- [N3XUS Agentic Framework](#n3xus-agentic-framework)
+- [Tech Stack](#tech-stack)
+- [Repository Structure](#repository-structure)
+- [Quickstart](#quickstart)
+- [Operations](#operations)
+- [Agentic System](#agentic-system)
+- [Security Model](#security-model)
+- [Roadmap](#roadmap)
+- [Documentation](#documentation)
+- [Current Status](#current-status)
+
+---
+
+## Overview
+
+**N3XUS Video Factory** is a self-hosted foundation for building a short-form video production pipeline with automation, review gates and growth experimentation.
+
+It is designed for:
+
+- product demo clips;
+- short-form content production;
+- long-form-to-short-form clipping;
+- hook, script and CTA variation testing;
+- human-reviewed publishing workflows;
+- future integration with analytics and lead generation systems.
+
+This repository is also the first implementation of the **N3XUS Agentic Framework (NAF)**: a reusable project structure for N3XUS initiatives using `CLAUDE.md`, specialized agents, skills, operational docs and safe infrastructure patterns.
+
+---
+
+## Why this exists
+
+Modern short-form video workflows usually fail in one of two ways:
+
+1. They are too manual, slow and inconsistent.
+2. They are too automated, generic and unsafe for serious brands.
+
+This project aims for the middle path:
+
+```text
+automation speed + human judgment + self-hosted control + repeatable experimentation
+```
+
+The goal is not to blindly auto-post content. The goal is to create a controlled production system where ideas, scripts, cuts, renders, reviews and publishing packages can move through a repeatable pipeline.
+
+---
+
+## Architecture
+
+Target deployment for v1:
 
 ```text
 Proxmox
@@ -30,14 +84,40 @@ Proxmox
     ├── Redis
     ├── MinIO
     ├── FFmpeg worker
-    ├── Video tools/workers
-    ├── scripts de operação
+    ├── Video tooling / future workers
+    ├── Healthcheck and backup scripts
     └── Claude agents + skills
 ```
 
-## NAF — N3XUS Agentic Framework
+Logical pipeline:
 
-O NAF define como projetos N3XUS devem nascer e evoluir.
+```text
+Input
+  ↓
+Research Engine
+  ↓
+Idea Engine
+  ↓
+Script Engine
+  ↓
+Storyboard Engine
+  ↓
+Video Engine
+  ↓
+Review Engine
+  ↓
+Publish Assist Engine
+  ↓
+Analytics Engine
+```
+
+More details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/ENGINE.md`](docs/ENGINE.md).
+
+---
+
+## N3XUS Agentic Framework
+
+The **N3XUS Agentic Framework (NAF)** defines how N3XUS projects should be structured and operated.
 
 ```text
 Project Memory  -> CLAUDE.md
@@ -47,111 +127,256 @@ Docs Layer      -> docs/
 Ops Layer       -> infra/ + scripts/ + workflows/
 ```
 
-Nível atual:
+Current maturity:
 
 ```text
 NAF-1 Foundation
 ```
 
-Próximo alvo:
+Next target:
 
 ```text
-NAF-2 Operável
+NAF-2 Operable
 ```
 
-## Estrutura
+See: [`docs/NAF.md`](docs/NAF.md).
+
+---
+
+## Tech Stack
+
+| Layer | Tooling | Purpose |
+|---|---|---|
+| Orchestration | Docker Compose | Local/self-hosted service orchestration |
+| Workflow automation | n8n | Reviewable automation and pipelines |
+| Database | Postgres | Durable state and metadata |
+| Queue/cache | Redis | Job coordination and future queue mode |
+| Object storage | MinIO | S3-compatible local media storage |
+| Media processing | FFmpeg worker | Render, convert, inspect and process video |
+| Ops | Makefile / Taskfile | Repeatable local commands |
+| Access model | Tailscale-first | Private administrative access |
+| Agentic layer | Claude agents + skills | Reusable project intelligence |
+
+---
+
+## Repository Structure
 
 ```text
 .
-├── CLAUDE.md
-├── AGENTS.md
-├── Makefile
-├── Taskfile.yml
-├── docs/
-├── infra/
-├── media/
-├── prompts/
-├── scripts/
-├── workflows/
-└── .claude/
-    ├── agents/
-    └── skills/
+├── .claude/
+│   ├── agents/                  # Specialized Claude agents
+│   └── skills/                  # Reusable operational skills
+├── .github/workflows/           # CI validation workflows
+├── backups/                     # Local backup output placeholder
+├── docs/                        # Architecture, operations, security and NAF docs
+├── infra/                       # Docker Compose and infrastructure files
+├── media/                       # Raw, scripted, rendered and approved media paths
+├── prompts/                     # Hooks, scripts, captions and CTA prompt libraries
+├── scripts/                     # Healthcheck and backup scripts
+├── workflows/                   # n8n workflow placeholders
+├── AGENTS.md                    # Human-readable agent guide
+├── CLAUDE.md                    # Project memory for Claude Code
+├── Makefile                     # Make-based operations
+├── Taskfile.yml                 # Task-based operations
+└── README.md
 ```
 
-## Stack inicial
+---
 
-- **Docker Compose**: orquestração local simples e auditável.
-- **n8n**: workflows de produção, revisão e metadados.
-- **Postgres**: persistência de estado.
-- **Redis**: fila/cache.
-- **MinIO**: storage S3-compatible para assets e renders.
-- **FFmpeg worker**: base para renderização/crop/conversão.
-- **Tailscale**: acesso administrativo seguro.
+## Quickstart
 
-## Regras de operação
+### 1. Clone
 
-- Não publicar automaticamente sem revisão humana.
-- Não usar cookie/session hack para redes sociais.
-- Não commitar `.env`, tokens, chaves ou cookies.
-- Não expor painéis sem autenticação.
-- Preferir self-hosted e APIs oficiais.
-- Toda mudança de infra deve ter validação e rollback.
+```bash
+git clone https://github.com/Samurai33/n3xus-video-factory.git
+cd n3xus-video-factory
+```
 
-## Primeiros comandos
+### 2. Create local environment
 
 ```bash
 cp infra/.env.example infra/.env
-# edite infra/.env com senhas fortes
+```
 
+Edit `infra/.env` and replace placeholder values with strong local secrets.
+
+Required values:
+
+```env
+POSTGRES_PASSWORD=change-me-strong-password
+MINIO_ROOT_PASSWORD=change-me-strong-password
+N8N_ENCRYPTION_KEY=change-me-32-plus-chars-random
+```
+
+### 3. Validate Compose
+
+```bash
 make compose-config
+```
+
+Without Make:
+
+```bash
+docker compose -f infra/docker-compose.yml --env-file infra/.env config
+```
+
+### 4. Start the stack
+
+```bash
 make up
 make ps
 ```
 
-Sem Make:
+Without Make:
 
 ```bash
-docker compose -f infra/docker-compose.yml --env-file infra/.env config
 docker compose -f infra/docker-compose.yml --env-file infra/.env up -d
 docker compose -f infra/docker-compose.yml --env-file infra/.env ps
 ```
 
-## Healthcheck e backup
+---
+
+## Operations
+
+Common commands:
+
+```bash
+make help
+make env-check
+make compose-config
+make up
+make ps
+make logs
+make health
+make backup
+```
+
+Direct script execution:
 
 ```bash
 bash scripts/healthcheck.sh
 bash scripts/backup.sh
 ```
 
-## Acesso local
+Default local service bindings:
 
-Por segurança, os serviços iniciais estão bindados em `127.0.0.1`:
+| Service | URL |
+|---|---|
+| n8n | `http://127.0.0.1:5678` |
+| MinIO API | `http://127.0.0.1:9000` |
+| MinIO Console | `http://127.0.0.1:9001` |
 
-- n8n: `http://127.0.0.1:5678`
-- MinIO API: `http://127.0.0.1:9000`
-- MinIO Console: `http://127.0.0.1:9001`
+Services are intentionally bound to `127.0.0.1` for the initial security posture. Use Tailscale or SSH tunneling for remote administration before considering public exposure.
 
-Para acesso remoto, use Tailscale/SSH tunnel antes de qualquer exposição pública.
+---
 
-## Padrão agentic
+## Agentic System
 
-Este repo foi preparado para operar com Claude Code:
+This repository includes specialized agents for infrastructure, video processing, content systems, operations and security.
 
-- `CLAUDE.md`: memória operacional do projeto.
-- `.claude/agents/`: especialistas por domínio.
-- `.claude/skills/`: procedimentos repetíveis.
-- `docs/`: arquitetura, operação, segurança, engine e framework.
+Examples:
 
-## Roadmap curto
+- `chief-operator`
+- `infra-architect`
+- `docker-compose-engineer`
+- `video-pipeline-engineer`
+- `workflow-automation-engineer`
+- `growth-systems-strategist`
+- `prompt-systems-engineer`
+- `content-safety-editor`
+- `data-analytics-engineer`
+- `security-reviewer`
+- `observability-sre`
+- `qa-reviewer`
 
-1. Subir stack base.
-2. Validar VM, Docker, volumes e portas.
-3. Adicionar workers reais de clipping/Whisper.
-4. Criar primeiro lote HotLead.
-5. Implementar fluxo n8n de revisão.
-6. Conectar storage/backup.
-7. Evoluir de NAF-1 para NAF-2.
+Skills include repeatable procedures such as:
 
-## Status
+- `/repo-healthcheck`
+- `/run-local-ops`
+- `/deploy-compose-stack`
+- `/backup-media-store`
+- `/create-shorts-batch`
+- `/create-growth-experiment`
+- `/review-before-publish`
+- `/audit-video-pipeline`
+- `/generate-agentic-spec`
 
-Base v2 criada para evolução incremental.
+The project memory lives in [`CLAUDE.md`](CLAUDE.md). The agent guide lives in [`AGENTS.md`](AGENTS.md).
+
+---
+
+## Security Model
+
+This project is built around a conservative operating model:
+
+- no automatic publishing to official accounts without human review;
+- no cookie/session hacks for social platforms;
+- no secrets committed to Git;
+- no public panel exposure by default;
+- local-first and Tailscale-first administration;
+- official APIs or manual approval flows preferred;
+- generated media and backups are excluded from Git.
+
+See: [`docs/SECURITY.md`](docs/SECURITY.md).
+
+---
+
+## Roadmap
+
+### Foundation
+
+- [x] Repository created
+- [x] Default branch set to `main`
+- [x] Claude project memory added
+- [x] Agents and skills initialized
+- [x] Docker Compose baseline added
+- [x] NAF documentation added
+- [x] Healthcheck and backup scripts added
+
+### NAF-2 Operable
+
+- [ ] Validate stack on the target VM
+- [ ] Confirm n8n + Postgres + Redis + MinIO startup
+- [ ] Add real video worker profile
+- [ ] Add Whisper/transcription workflow
+- [ ] Add render validation workflow
+- [ ] Add first HotLead content experiment
+
+### NAF-3 Production Lite
+
+- [ ] Backup restore test
+- [ ] Log and metrics runbook
+- [ ] Hardening checklist
+- [ ] Tailscale-only admin guide
+- [ ] Review board workflow
+- [ ] Analytics feedback loop
+
+---
+
+## Documentation
+
+| Document | Purpose |
+|---|---|
+| [`docs/NAF.md`](docs/NAF.md) | N3XUS Agentic Framework |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Infrastructure and system architecture |
+| [`docs/ENGINE.md`](docs/ENGINE.md) | Video Factory engine design |
+| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Operational commands and procedures |
+| [`docs/SECURITY.md`](docs/SECURITY.md) | Security posture and constraints |
+| [`docs/VIDEO_PIPELINE.md`](docs/VIDEO_PIPELINE.md) | Media processing rules and flow |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Project roadmap |
+| [`docs/COMMANDS.md`](docs/COMMANDS.md) | Command reference |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Development workflow |
+
+---
+
+## Current Status
+
+```text
+Status: Active foundation
+Branch: main
+Maturity: NAF-1 Foundation
+Next milestone: NAF-2 Operable
+Primary deployment target: Proxmox VM / Ubuntu Server 24.04 LTS
+```
+
+This is an early-stage foundation. It is not yet a complete video automation product, but the repository is structured to evolve into one through safe, versioned, agentic increments.
