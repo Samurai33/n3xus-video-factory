@@ -1,0 +1,207 @@
+openapi: 3.1.0
+info:
+  title: N3XUS n8n Control Gateway
+  description: Restricted API gateway for safely operating selected N3XUS Video Factory n8n actions through a Custom GPT.
+  version: 0.1.0
+servers:
+  - url: https://gateway.example.com
+    description: Replace with the public HTTPS URL for the N3XUS Gateway.
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      operationId: getGatewayHealth
+      summary: Check gateway health.
+      description: Returns gateway status and safe runtime metadata.
+      security: []
+      responses:
+        "200":
+          description: Gateway health response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /video-requests:
+    post:
+      operationId: createVideoRequest
+      summary: Create a draft video request job.
+      description: Creates a local draft job for a video idea. This does not render or publish content.
+      x-openai-isConsequential: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoRequestInput"
+      responses:
+        "201":
+          description: Draft video request created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoRequestResponse"
+  /n8n/workflows:
+    get:
+      operationId: listN8nWorkflows
+      summary: List n8n workflows.
+      description: Lists n8n workflows visible to the configured n8n API key.
+      responses:
+        "200":
+          description: Workflow list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  workflows:
+                    type: array
+                    items:
+                      type: object
+  /n8n/workflows/draft:
+    post:
+      operationId: createDraftWorkflow
+      summary: Create an inactive n8n workflow draft.
+      description: Creates or forwards an inactive draft workflow. The gateway must force active=false.
+      x-openai-isConsequential: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DraftWorkflowInput"
+      responses:
+        "201":
+          description: Draft workflow created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  workflow:
+                    type: object
+                  policy:
+                    type: string
+  /n8n/import-command:
+    post:
+      operationId: generateN8nImportCommand
+      summary: Generate a safe n8n CLI import command.
+      description: Returns a command for manual workflow import with workflows inactive by default.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - inputPath
+              properties:
+                inputPath:
+                  type: string
+                  description: Path to the workflow JSON file or directory on the n8n host.
+      responses:
+        "200":
+          description: Import command.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  command:
+                    type: string
+                  note:
+                    type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Use API Key authentication in the GPT builder with Authorization Bearer token.
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        service:
+          type: string
+        mode:
+          type: string
+    VideoRequestInput:
+      type: object
+      required:
+        - project
+        - idea
+        - targetAudience
+      properties:
+        project:
+          type: string
+          description: Project name such as HotLead or N3XUS Dev.
+        idea:
+          type: string
+          description: One clear video idea.
+        targetAudience:
+          type: string
+          description: Intended audience for the video.
+        pillar:
+          type: string
+          enum:
+            - Pain
+            - Demo
+            - Authority
+            - Proof
+            - Comparison
+            - Education
+          description: Content pillar.
+        cta:
+          type: string
+          description: One safe call to action.
+        priority:
+          type: string
+          enum:
+            - low
+            - normal
+            - high
+          description: Job priority.
+    VideoRequestResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        jobId:
+          type: string
+        filePath:
+          type: string
+        status:
+          type: string
+    DraftWorkflowInput:
+      type: object
+      required:
+        - name
+        - nodes
+        - connections
+      properties:
+        name:
+          type: string
+          description: Draft workflow name.
+        nodes:
+          type: array
+          description: n8n workflow nodes.
+          items:
+            type: object
+        connections:
+          type: object
+          description: n8n workflow connections.
+        settings:
+          type: object
+          description: n8n workflow settings.
+        tags:
+          type: array
+          items:
+            type: string
