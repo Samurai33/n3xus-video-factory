@@ -1,0 +1,44 @@
+# Secrets
+.env
+infra/.env
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# Logs
+*.log
+logs/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node/Python
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Media outputs
+media/raw/*
+media/renders/*
+media/archive/*
+!media/raw/.gitkeep
+!media/renders/.gitkeep
+!media/archive/.gitkeep
+
+# Heavy generated media
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.wav
+*.mp3
+*.srt
+*.vtt

@@ -1,0 +1,13 @@
+{
+  "name": "Clip Long Video",
+  "description": "Placeholder para workflow n8n: vídeo longo -> transcrição -> highlights -> cortes verticais.",
+  "status": "draft",
+  "steps": [
+    "ingest_raw_video",
+    "transcribe",
+    "detect_highlights",
+    "crop_vertical",
+    "render_clips",
+    "review"
+  ]
+}

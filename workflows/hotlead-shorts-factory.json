@@ -1,0 +1,13 @@
+{
+  "name": "HotLead Shorts Factory",
+  "description": "Placeholder para workflow n8n: ideia -> roteiro -> revisão -> render -> aprovado.",
+  "status": "draft",
+  "steps": [
+    "receive_idea",
+    "generate_hooks",
+    "generate_script",
+    "human_review",
+    "render_job",
+    "move_to_approved"
+  ]
+}

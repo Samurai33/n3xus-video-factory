@@ -1,0 +1,12 @@
+{
+  "name": "Publish Review Board",
+  "description": "Placeholder para workflow n8n: revisar mídia aprovada, checklist e publicação manual/API oficial.",
+  "status": "draft",
+  "steps": [
+    "list_approved",
+    "generate_title_description",
+    "check_rights",
+    "human_approval",
+    "manual_publish_checklist"
+  ]
+}

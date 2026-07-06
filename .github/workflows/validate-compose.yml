@@ -1,0 +1,26 @@
+name: Validate Compose
+
+on:
+  push:
+    paths:
+      - 'infra/docker-compose.yml'
+      - 'infra/.env.example'
+      - '.github/workflows/validate-compose.yml'
+  pull_request:
+    paths:
+      - 'infra/docker-compose.yml'
+      - 'infra/.env.example'
+      - '.github/workflows/validate-compose.yml'
+
+jobs:
+  validate-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare env
+        run: cp infra/.env.example infra/.env
+
+      - name: Validate compose config
+        run: docker compose -f infra/docker-compose.yml --env-file infra/.env config
