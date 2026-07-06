@@ -1,0 +1,52 @@
+version: '3'
+
+vars:
+  COMPOSE: docker compose -f infra/docker-compose.yml --env-file infra/.env
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  env-check:
+    desc: Validate required local files
+    cmds:
+      - test -f infra/docker-compose.yml && echo "OK infra/docker-compose.yml"
+      - test -f infra/.env && echo "OK infra/.env" || (echo "MISSING infra/.env — copy infra/.env.example" && exit 1)
+
+  compose-config:
+    desc: Validate Docker Compose config
+    deps: [env-check]
+    cmds:
+      - '{{.COMPOSE}} config'
+
+  up:
+    desc: Start stack
+    deps: [compose-config]
+    cmds:
+      - '{{.COMPOSE}} up -d'
+
+  down:
+    desc: Stop stack
+    cmds:
+      - '{{.COMPOSE}} down'
+
+  ps:
+    desc: Show containers
+    cmds:
+      - '{{.COMPOSE}} ps'
+
+  logs:
+    desc: Show recent logs
+    cmds:
+      - '{{.COMPOSE}} logs --tail=120'
+
+  health:
+    desc: Run healthcheck
+    cmds:
+      - bash scripts/healthcheck.sh
+
+  backup:
+    desc: Run backup
+    cmds:
+      - bash scripts/backup.sh
