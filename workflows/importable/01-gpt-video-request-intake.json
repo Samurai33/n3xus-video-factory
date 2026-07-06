@@ -98,8 +98,22 @@
     },
     {
       "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const crypto = require('crypto');\nconst fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first().json;\n\nfunction safeSlug(value) {\n  return String(value || 'job')\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/(^-|-$)/g, '')\n    .slice(0, 60) || 'job';\n}\n\nfunction nowStamp() {\n  return new Date().toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}Z$/, 'Z');\n}\n\nconst required = ['idea', 'targetAudience'];\nconst missing = required.filter((field) => !input[field]);\nif (missing.length > 0) {\n  throw new Error(`Missing required field(s): ${missing.join(', ')}`);\n}\n\nconst jobId = `${safeSlug(input.project)}-${nowStamp()}-${crypto.randomBytes(3).toString('hex')}`;\nconst createdAt = input.createdAt || new Date().toISOString();\nconst jobDir = $env.NVF_JOB_DIR || '/media/scripts';\n\nconst job = {\n  schemaVersion: '1.0.0',\n  jobId,\n  project: input.project,\n  type: input.type || 'short-video',\n  pillar: input.pillar,\n  idea: input.idea,\n  targetAudience: input.targetAudience,\n  cta: input.cta,\n  status: 'needs-review',\n  requiresHumanReview: true,\n  autoPublish: false,\n  createdAt,\n  updatedAt: createdAt,\n  source: {\n    system: 'n8n',\n    workflow: 'NVF 01 - GPT Video Request Intake',\n    endpoint: '/webhook/nvf-video-request'\n  },\n  review: { decision: 'pending', reviewer: null, reviewedAt: null, notes: null },\n  script: { hook: null, body: null, cta: null, caption: null, hashtags: [] },\n  render: { status: 'not-started', format: 'vertical-9x16', durationTargetSeconds: 30, outputPath: null },\n  publish: { status: 'not-ready', manualOnly: true, platforms: [], publishedAt: null }\n};\n\nfs.mkdirSync(jobDir, { recursive: true });\nconst filePath = path.join(jobDir, `${jobId}.json`);\nfs.writeFileSync(filePath, JSON.stringify(job, null, 2), 'utf8');\n\nreturn [{ json: { ok: true, jobId, filePath, status: job.status, job } }];"
+      },
+      "id": "6b1e2c9a-7f3d-4a5b-9c0e-build-persist-job",
+      "name": "Build & Persist Job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { ok: true, message: 'Draft video request accepted. Human review is required before rendering or publishing.', data: $json } }}",
+        "responseBody": "={{ { ok: true, message: 'Job created and pending human review.', jobId: $json.jobId, filePath: $json.filePath, status: $json.status, data: $json.job } }}",
         "options": {}
       },
       "id": "e34a84d3-ea0a-4504-928a-respond-request",
@@ -107,7 +121,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        800,
+        1080,
         300
       ]
     }
@@ -128,6 +142,17 @@
       "main": [
         [
           {
+            "node": "Build & Persist Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build & Persist Job": {
+      "main": [
+        [
+          {
             "node": "Respond Draft Accepted",
             "type": "main",
             "index": 0
@@ -141,10 +166,10 @@
   },
   "staticData": null,
   "pinData": {},
-  "versionId": "d1a7f958-9a03-49ef-9b01-video-request-v1",
+  "versionId": "e2b8c116-9a03-49ef-9b01-video-request-v2",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "description": "Receives GPT/gateway video requests and returns a draft job response. Does not render or publish."
+    "description": "Receives GPT/gateway video requests, builds a schema-compliant job (see docs/JOB_SCHEMA.md) and persists it to NVF_JOB_DIR (default /media/scripts). Does not render or publish. Requires NODE_FUNCTION_ALLOW_BUILTIN=fs,path,crypto on the n8n container."
   },
   "tags": []
 }

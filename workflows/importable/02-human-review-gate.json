@@ -3,92 +3,137 @@
   "active": false,
   "nodes": [
     {
-      "parameters": {},
-      "id": "3a6c7932-5e7c-4c4f-manual-review-trigger",
-      "name": "Manual Review Trigger",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "nvf-review-pending",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1c9a7e2b-4f5a-4b3d-8a10-review-pending-webhook",
+      "name": "List Pending Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
       "position": [
         240,
-        300
+        200
+      ],
+      "webhookId": "nvf-review-pending"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst jobDir = $env.NVF_JOB_DIR || '/media/scripts';\nconst pendingStatuses = ['draft', 'needs-review'];\n\nlet files = [];\ntry {\n  files = fs.readdirSync(jobDir).filter((name) => name.endsWith('.json'));\n} catch (error) {\n  return [{ json: { ok: true, count: 0, pending: [], note: `Job directory not found yet: ${jobDir}` } }];\n}\n\nconst pending = [];\nfor (const fileName of files) {\n  const filePath = path.join(jobDir, fileName);\n  try {\n    const raw = fs.readFileSync(filePath, 'utf8');\n    const job = JSON.parse(raw);\n    if (pendingStatuses.includes(job.status)) {\n      pending.push({\n        jobId: job.jobId,\n        project: job.project,\n        pillar: job.pillar,\n        idea: job.idea,\n        targetAudience: job.targetAudience,\n        cta: job.cta,\n        status: job.status,\n        createdAt: job.createdAt\n      });\n    }\n  } catch (error) {\n    // Skip unreadable/malformed job files instead of failing the whole listing.\n    continue;\n  }\n}\n\npending.sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));\n\nreturn [{ json: { ok: true, count: pending.length, pending } }];"
+      },
+      "id": "2d4b8f3c-5a6b-4c7d-9e21-list-pending-jobs",
+      "name": "List Pending Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        200
       ]
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "reviewStatus",
-              "name": "reviewStatus",
-              "value": "needs-review",
-              "type": "string"
-            },
-            {
-              "id": "reviewType",
-              "name": "reviewType",
-              "value": "script-or-render",
-              "type": "string"
-            },
-            {
-              "id": "decision",
-              "name": "decision",
-              "value": "pending",
-              "type": "string"
-            },
-            {
-              "id": "approvalPolicy",
-              "name": "approvalPolicy",
-              "value": "Human approval required before render, activation, or publishing.",
-              "type": "string"
-            },
-            {
-              "id": "checkedAt",
-              "name": "checkedAt",
-              "value": "={{ $now.toISO() }}",
-              "type": "string"
-            }
-          ]
-        },
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
         "options": {}
       },
-      "id": "877d3e7b-4f0c-4e95-build-review-record",
-      "name": "Build Review Record",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "id": "3e5c9a4d-6b7c-4d8e-af32-respond-pending",
+      "name": "Respond Pending List",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
       "position": [
-        520,
-        300
+        800,
+        200
       ]
     },
     {
-      "parameters": {},
-      "id": "2f3bc96c-1d3a-44c1-review-placeholder",
-      "name": "Review Placeholder",
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nvf-review-decision",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4f6d0b5e-7c8d-4e9f-b043-review-decision-webhook",
+      "name": "Review Decision Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        420
+      ],
+      "webhookId": "nvf-review-decision"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst body = $input.first().json.body || {};\nconst jobDir = $env.NVF_JOB_DIR || '/media/scripts';\n\nconst jobId = String(body.jobId || '').trim();\nconst decision = String(body.decision || '').trim();\nconst reviewer = body.reviewer || null;\nconst notes = body.notes || null;\n\nconst allowedDecisions = ['approved', 'rejected'];\n\nif (!jobId) {\n  throw new Error('jobId is required');\n}\nif (!allowedDecisions.includes(decision)) {\n  throw new Error(`decision must be one of: ${allowedDecisions.join(', ')}`);\n}\n\nconst filePath = path.join(jobDir, `${jobId}.json`);\nif (!fs.existsSync(filePath)) {\n  throw new Error(`Job not found: ${jobId}`);\n}\n\nconst job = JSON.parse(fs.readFileSync(filePath, 'utf8'));\nconst reviewedAt = new Date().toISOString();\n\njob.status = decision;\njob.updatedAt = reviewedAt;\njob.review = {\n  decision,\n  reviewer,\n  reviewedAt,\n  notes\n};\n\n// Safety rules are never overridable by the review payload.\njob.requiresHumanReview = true;\njob.autoPublish = false;\n\nfs.writeFileSync(filePath, JSON.stringify(job, null, 2), 'utf8');\n\nreturn [{ json: { ok: true, jobId, status: job.status, review: job.review, job } }];"
+      },
+      "id": "5a7e1c6f-8d9e-4f0a-c154-apply-review-decision",
+      "name": "Apply Review Decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "6b8f2d70-9e0f-4a1b-d265-respond-decision",
+      "name": "Respond Decision",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
       "position": [
         800,
-        300
+        420
       ]
     }
   ],
   "connections": {
-    "Manual Review Trigger": {
+    "List Pending Webhook": {
       "main": [
         [
           {
-            "node": "Build Review Record",
+            "node": "List Pending Jobs",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Review Record": {
+    "List Pending Jobs": {
       "main": [
         [
           {
-            "node": "Review Placeholder",
+            "node": "Respond Pending List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Decision Webhook": {
+      "main": [
+        [
+          {
+            "node": "Apply Review Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Review Decision": {
+      "main": [
+        [
+          {
+            "node": "Respond Decision",
             "type": "main",
             "index": 0
           }
@@ -101,10 +146,10 @@
   },
   "staticData": null,
   "pinData": {},
-  "versionId": "1a1a2efc-review-gate-v1",
+  "versionId": "7c9d3e81-review-gate-v2",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "description": "Manual human review checkpoint. Replace placeholder with Wait/Form/Approval flow after UI validation."
+    "description": "Real human review checkpoint: GET /nvf-review-pending lists jobs with status draft/needs-review, POST /nvf-review-decision applies approved/rejected and writes the decision back into the job file. requiresHumanReview and autoPublish are always enforced server-side. Requires NODE_FUNCTION_ALLOW_BUILTIN=fs,path,crypto on the n8n container. Next upgrade: replace raw JSON POST with an n8n Form Trigger UI."
   },
   "tags": []
 }

@@ -54,44 +54,32 @@ NVF 03 - Publish Assist Package
 
 `NVF 02` and `NVF 03` are still placeholders. They must be upgraded before being considered operational.
 
-## Main gaps
+## Recently implemented (not yet re-imported/tested in a running n8n)
 
-### P0 — Job persistence
+### P0 — Job persistence (implemented in workflow JSON)
 
-The intake workflow currently responds to the request but does not persist a durable job record.
+`NVF 01 - GPT Video Request Intake` now has a `Build & Persist Job` Code node that:
 
-Required:
+- validates `idea` and `targetAudience` are present;
+- generates a `jobId` (`{project-slug}-{timestamp}-{random}`);
+- builds the full schema-compliant job object from `docs/JOB_SCHEMA.md`;
+- writes it to `NVF_JOB_DIR` (default `/media/scripts/{jobId}.json`);
+- returns `jobId`, `filePath` and `status` in the webhook response.
 
-- Create a job ID.
-- Create normalized job JSON.
-- Write job JSON to `/media/scripts` or a dedicated jobs folder.
-- Include status fields:
-  - `draft`
-  - `needs-review`
-  - `approved`
-  - `rejected`
-  - `rendered`
-  - `ready-to-publish`
-- Include audit fields:
-  - createdAt
-  - source
-  - project
-  - pillar
-  - targetAudience
-  - cta
-  - reviewer
-  - approval timestamp
+This requires `NODE_FUNCTION_ALLOW_BUILTIN=fs,path,crypto` on the n8n container (added to `infra/docker-compose.yml` and `infra/.env.example`). Without it, the Code node's `require('fs')` will throw.
 
-### P0 — Human review flow
+**Still required before this counts as validated:** re-import the workflow (`make import-n8n-workflows` or via n8n UI), restart the `n8n` service so the new env var takes effect, and send a real request through `/webhook/nvf-video-request` to confirm a job file actually lands in `/media/scripts`.
 
-`NVF 02 - Human Review Gate` is still a manual placeholder.
+### P0 — Human review flow (implemented in workflow JSON)
 
-Required:
+`NVF 02 - Human Review Gate` was rewritten from a no-op placeholder into two real webhook endpoints:
 
-- Read pending jobs.
-- Present review payload.
-- Allow approve/reject/rewrite decisions.
-- Prevent rendering or publishing without approval.
+- `GET /webhook/nvf-review-pending` — reads every job file in `NVF_JOB_DIR`, filters by `status` in `draft`/`needs-review`, returns a summarized pending list.
+- `POST /webhook/nvf-review-decision` — takes `{ jobId, decision, reviewer, notes }`, only accepts `decision` of `approved`/`rejected`, rewrites the job file with the decision, and force-enforces `requiresHumanReview: true` and `autoPublish: false` server-side regardless of the request payload.
+
+**Still a placeholder for the "rewrite" decision path** (only approve/reject exist so far), and there's no UI yet — decisions are raw JSON POSTs. Next natural upgrade is an n8n Form Trigger so a human doesn't need to hand-craft requests.
+
+**Still required before this counts as validated:** re-import the workflow, restart `n8n`, and manually test both endpoints against a job created by NVF 01.
 
 ### P0 — Safe MCP/GPT control boundary
 
@@ -174,14 +162,19 @@ Required:
 
 ## Next recommended execution order
 
-1. Upgrade workflow 01 to persist job JSON.
-2. Create `docs/JOB_SCHEMA.md`.
-3. Create sample HotLead job.
-4. Upgrade workflow 02 into a real review gate.
-5. Create script-generation workflow.
-6. Add worker handoff contract.
-7. Validate backup and restore.
-8. Move from local Windows to Proxmox VM after the local pipeline is stable.
+1. ~~Upgrade workflow 01 to persist job JSON.~~ Done in workflow JSON — needs re-import + live test.
+2. ~~Create `docs/JOB_SCHEMA.md`.~~ Done.
+3. ~~Create sample HotLead job.~~ Done.
+4. ~~Upgrade workflow 02 into a real review gate.~~ Done in workflow JSON — needs re-import + live test, and still lacks a UI (raw JSON POST only) and a "rewrite" decision path.
+5. Re-import both workflows into the running n8n instance and confirm end-to-end: intake → job file on disk → pending list shows it → decision endpoint flips its status.
+6. Create script-generation workflow (hook/body/CTA/caption/hashtags from an approved job).
+7. Add FFmpeg worker handoff contract (the `video-worker` container is still idle — `sleep infinity` entrypoint).
+8. Validate backup and restore.
+9. Move from local Windows to Proxmox VM after the local pipeline is stable.
+
+## Open decision needing your sign-off
+
+Enabling `NODE_FUNCTION_ALLOW_BUILTIN=fs,path,crypto` on the n8n container lets any Code node in any workflow read/write the filesystem the container can see (which includes the `../media` mount and, if misused, more of the container's own filesystem). This is standard practice for local self-hosted n8n job-file patterns and n8n itself is only bound to `127.0.0.1`/Tailscale per `docs/SECURITY.md`, so the exposure is local-only for now — but it's a real trust-boundary change worth being aware of before this stack is ever exposed beyond localhost.
 
 ## Definition of done for NAF-2 Operable
 
