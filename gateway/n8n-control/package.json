@@ -1,0 +1,17 @@
+{
+  "name": "n3xus-n8n-control-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Restricted GPT-to-n8n control gateway for N3XUS Video Factory.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
