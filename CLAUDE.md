@@ -8,7 +8,32 @@ Este projeto cria uma fábrica self-hosted de vídeos curtos para HotLead, N3XUS
 - automação controlada;
 - qualidade premium;
 - segurança operacional;
-- infraestrutura gratuita ou self-hosted sempre que possível.
+- infraestrutura gratuita ou self-hosted sempre que possível;
+- criação do padrão N3XUS Agentic Framework para futuros projetos.
+
+## NAF — N3XUS Agentic Framework
+
+O NAF é o padrão operacional agentic-first da N3XUS.
+
+Camadas:
+
+- Project Memory: `CLAUDE.md`;
+- Agent Layer: `.claude/agents/`;
+- Skill Layer: `.claude/skills/`;
+- Docs Layer: `docs/`;
+- Ops Layer: `infra/`, `scripts/`, `workflows/`.
+
+Nível atual:
+
+```text
+NAF-1 Foundation
+```
+
+Próximo alvo:
+
+```text
+NAF-2 Operável
+```
 
 ## Arquitetura alvo
 
@@ -22,6 +47,8 @@ Componentes principais:
 - Redis para fila/cache;
 - MinIO ou storage local para vídeos e assets;
 - workers de vídeo para FFmpeg, Whisper, clipping, captions e render;
+- Makefile/Taskfile para operação local;
+- scripts de healthcheck e backup;
 - acesso administrativo via Tailscale;
 - exposição pública somente quando necessário e com proxy seguro.
 
@@ -35,7 +62,8 @@ Antes de implementar, sempre avaliar:
 4. facilidade de backup;
 5. possibilidade de rodar local;
 6. manutenção futura;
-7. risco de bloqueio por APIs ou automações frágeis.
+7. risco de bloqueio por APIs ou automações frágeis;
+8. aderência ao NAF.
 
 ## Regras obrigatórias
 
@@ -49,8 +77,22 @@ Antes de implementar, sempre avaliar:
 - Todo serviço exposto deve ter justificativa.
 - Tailscale é o acesso administrativo padrão.
 - Cloudflare Tunnel ou reverse proxy só depois de validação local.
+- Não criar agente novo quando uma skill resolver.
+- Não criar serviço novo sem plano de operação e backup.
 
 ## Comandos principais
+
+```bash
+make env-check
+make compose-config
+make up
+make ps
+make logs
+make health
+make backup
+```
+
+Sem Make:
 
 ```bash
 docker compose -f infra/docker-compose.yml --env-file infra/.env config
@@ -69,23 +111,36 @@ Quando trabalhar neste projeto:
 - validar antes de aplicar;
 - explicar riscos;
 - manter o padrão self-hosted;
-- separar pesquisa, plano, implementação e validação.
+- separar pesquisa, plano, implementação e validação;
+- evoluir o projeto por incrementos versionáveis.
 
 ## Estrutura agentic
 
 Use subagents quando a tarefa exigir análise especializada:
 
+- `chief-operator` para coordenação e prioridade;
 - `infra-architect` para arquitetura;
 - `docker-compose-engineer` para Compose e containers;
 - `video-pipeline-engineer` para FFmpeg, Whisper, captions e render;
 - `growth-systems-strategist` para viral loops e experimentos;
+- `workflow-automation-engineer` para n8n e automações;
+- `prompt-systems-engineer` para prompts, hooks e templates;
+- `content-safety-editor` para claims, copyright e risco de publicação;
+- `data-analytics-engineer` para métricas e experimentos;
 - `security-reviewer` para exposição, secrets e permissões;
-- `observability-sre` para logs, métricas, saúde e backups.
+- `observability-sre` para logs, métricas, saúde e backups;
+- `qa-reviewer` para qualidade e validação.
 
 Use skills quando a tarefa for procedimento repetível:
 
 - `/bootstrap-video-factory`
 - `/deploy-compose-stack`
 - `/validate-infra`
+- `/repo-healthcheck`
+- `/run-local-ops`
+- `/backup-media-store`
 - `/create-shorts-batch`
+- `/create-growth-experiment`
+- `/review-before-publish`
 - `/audit-video-pipeline`
+- `/generate-agentic-spec`
