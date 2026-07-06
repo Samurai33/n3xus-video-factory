@@ -21,7 +21,8 @@ Camadas:
 - Agent Layer: `.claude/agents/`;
 - Skill Layer: `.claude/skills/`;
 - Docs Layer: `docs/`;
-- Ops Layer: `infra/`, `scripts/`, `workflows/`.
+- Ops Layer: `infra/`, `scripts/`, `workflows`;
+- Control Layer: `gateway/`, `gpt-actions/`, MCP futuro.
 
 Nível atual:
 
@@ -49,8 +50,10 @@ Componentes principais:
 - workers de vídeo para FFmpeg, Whisper, clipping, captions e render;
 - Makefile/Taskfile para operação local;
 - scripts de healthcheck e backup;
+- N3XUS n8n Control Gateway para Custom GPT Actions;
+- OpenAPI schema em `gpt-actions/`;
 - acesso administrativo via Tailscale;
-- exposição pública somente quando necessário e com proxy seguro.
+- exposição pública somente do gateway, quando necessário, com HTTPS e proxy seguro.
 
 ## Padrão de decisão
 
@@ -63,7 +66,8 @@ Antes de implementar, sempre avaliar:
 5. possibilidade de rodar local;
 6. manutenção futura;
 7. risco de bloqueio por APIs ou automações frágeis;
-8. aderência ao NAF.
+8. aderência ao NAF;
+9. escopo de permissão concedido ao GPT.
 
 ## Regras obrigatórias
 
@@ -79,6 +83,9 @@ Antes de implementar, sempre avaliar:
 - Cloudflare Tunnel ou reverse proxy só depois de validação local.
 - Não criar agente novo quando uma skill resolver.
 - Não criar serviço novo sem plano de operação e backup.
+- GPT nunca deve acessar o n8n diretamente; usar sempre o gateway.
+- Workflows criados via GPT devem nascer inativos/draft.
+- Ativação, publicação e ações externas exigem revisão humana.
 
 ## Comandos principais
 
@@ -90,6 +97,8 @@ make ps
 make logs
 make health
 make backup
+make bootstrap-n8n
+make bootstrap-gpt-gateway
 ```
 
 Sem Make:
@@ -138,6 +147,8 @@ Use skills quando a tarefa for procedimento repetível:
 - `/validate-infra`
 - `/repo-healthcheck`
 - `/run-local-ops`
+- `/setup-n8n-video-factory`
+- `/setup-gpt-n8n-control`
 - `/backup-media-store`
 - `/create-shorts-batch`
 - `/create-growth-experiment`
