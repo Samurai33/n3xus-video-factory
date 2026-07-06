@@ -85,7 +85,25 @@ Antes de implementar, sempre avaliar:
 - Não criar serviço novo sem plano de operação e backup.
 - GPT nunca deve acessar o n8n diretamente; usar sempre o gateway.
 - Workflows criados via GPT devem nascer inativos/draft.
-- Ativação, publicação e ações externas exigem revisão humana.
+- Ativação, publicação e ações externas exigem revisão humana **em produção** (ver exceção temporária de desenvolvimento abaixo).
+
+## Modo desenvolvimento (temporário — endurecer depois)
+
+Enquanto a stack rodar **apenas localmente** (Windows/Docker Desktop, antes da VM Proxmox `n3xus-video-factory-01` existir), o Claude Code pode agir sem pedir aprovação turno-a-turno para:
+
+- ativar/desativar workflows n8n no ambiente local (`n8n update:workflow --active=...`);
+- reimportar, corrigir e limpar workflows n8n locais, incluindo apagar registros comprovadamente duplicados/obsoletos no Postgres local;
+- reiniciar containers da stack local para aplicar mudanças de configuração;
+- conectar MCPs/tooling local (ex.: Docker MCP Toolkit) usados só para operar essa mesma stack local.
+
+Isso **não muda** nenhuma destas regras, que continuam exigindo revisão humana explícita sempre, em qualquer modo:
+
+- publicação real em redes sociais ou contas oficiais;
+- qualquer coisa envolvendo credenciais, tokens, `.env` ou secrets;
+- exposição de serviços para fora da rede local/Tailscale;
+- qualquer ação fora desta máquina de desenvolvimento (produção, Proxmox, VM remota).
+
+**Gatilho para endurecer:** quando o pipeline local for considerado estável (ver `docs/PROJECT_STATUS.md` → "Definition of done for NAF-2 Operable") ou antes de migrar para a VM Proxmox, remover esta seção inteira e voltar à regra original — revisão humana para toda ativação/publicação/ação externa, inclusive local.
 
 ## Comandos principais
 

@@ -2,7 +2,7 @@
 
 Date: 2026-07-06
 Owner: N3XUS / Samurai
-Status: Local n8n intake validated
+Status: P0 workflows imported in-place; awaiting human activation + live end-to-end test
 
 ## Executive summary
 
@@ -68,7 +68,9 @@ NVF 03 - Publish Assist Package
 
 This requires `NODE_FUNCTION_ALLOW_BUILTIN=fs,path,crypto` on the n8n container (added to `infra/docker-compose.yml` and `infra/.env.example`). Without it, the Code node's `require('fs')` will throw.
 
-**Still required before this counts as validated:** re-import the workflow (`make import-n8n-workflows` or via n8n UI), restart the `n8n` service so the new env var takes effect, and send a real request through `/webhook/nvf-video-request` to confirm a job file actually lands in `/media/scripts`.
+**Applied 2026-07-06:** the `n8n` container was recreated with `NODE_FUNCTION_ALLOW_BUILTIN=fs,path,crypto` and `NVF_JOB_DIR=/media/scripts` (verified via `printenv` inside the container), and the workflow was re-imported **in-place** (id `tJejRsZSIhjfSSVN`, verified in DB to contain the `Build & Persist Job` node). `/media/scripts` is mounted and writable from the container.
+
+**Still required before this counts as validated:** human activation of the workflow (import leaves it inactive by project policy), then send a real request through `/webhook/nvf-video-request` and confirm a job file lands in `/media/scripts`.
 
 ### P0 — Human review flow (implemented in workflow JSON)
 
@@ -79,7 +81,9 @@ This requires `NODE_FUNCTION_ALLOW_BUILTIN=fs,path,crypto` on the n8n container 
 
 **Still a placeholder for the "rewrite" decision path** (only approve/reject exist so far), and there's no UI yet — decisions are raw JSON POSTs. Next natural upgrade is an n8n Form Trigger so a human doesn't need to hand-craft requests.
 
-**Still required before this counts as validated:** re-import the workflow, restart `n8n`, and manually test both endpoints against a job created by NVF 01.
+**Applied 2026-07-06:** re-imported **in-place** (id `KBjhZoc0cxBkutmV`, verified in DB to contain both webhook endpoints: `List Pending Webhook` and `Review Decision Webhook`).
+
+**Still required before this counts as validated:** human activation, then manually test both endpoints against a job created by NVF 01.
 
 ### P0 — Safe MCP/GPT control boundary
 
@@ -166,11 +170,22 @@ Required:
 2. ~~Create `docs/JOB_SCHEMA.md`.~~ Done.
 3. ~~Create sample HotLead job.~~ Done.
 4. ~~Upgrade workflow 02 into a real review gate.~~ Done in workflow JSON — needs re-import + live test, and still lacks a UI (raw JSON POST only) and a "rewrite" decision path.
-5. Re-import both workflows into the running n8n instance and confirm end-to-end: intake → job file on disk → pending list shows it → decision endpoint flips its status.
+5. ~~Re-import both workflows into the running n8n instance~~ Done 2026-07-06 (in-place, verified in DB). Remaining: activate NVF 01 + NVF 02 (human review required) and confirm end-to-end: intake → job file on disk → pending list shows it → decision endpoint flips its status. Activation commands:
+
+   ```bash
+   docker exec nvf-n8n n8n update:workflow --id=tJejRsZSIhjfSSVN --active=true
+   docker exec nvf-n8n n8n update:workflow --id=KBjhZoc0cxBkutmV --active=true
+   docker restart nvf-n8n
+   ```
 6. Create script-generation workflow (hook/body/CTA/caption/hashtags from an approved job).
 7. Add FFmpeg worker handoff contract (the `video-worker` container is still idle — `sleep infinity` entrypoint).
 8. Validate backup and restore.
 9. Move from local Windows to Proxmox VM after the local pipeline is stable.
+
+## Housekeeping found on 2026-07-06
+
+- **Duplicate workflows in n8n**: a previous double-import left 3 stale inactive copies — `4tCLdmTqtRlOanI3` (NVF 01 old), `YPR4VJTFlSXfqv5c` (NVF 02 old), `Xb2NBGK5FHggEyDB` (NVF 03 old). The canonical copies are `tJejRsZSIhjfSSVN` (01), `KBjhZoc0cxBkutmV` (02), `IfK4TNlPdbjSXTQH` (03). Delete the stale ones via the n8n UI when convenient.
+- **Stale API key**: `N8N_API_KEY` in `infra/.env` returns `unauthorized` against the running instance. Rotate it (n8n UI → Settings → API) before any gateway/MCP integration — this also aligns with the P0 "rotate exposed tokens" item.
 
 ## Open decision needing your sign-off
 
