@@ -13,6 +13,7 @@ A production-oriented foundation for turning ideas, long-form content and produc
 [![Docker Compose](https://img.shields.io/badge/orchestration-Docker%20Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](infra/docker-compose.yml)
 [![n8n](https://img.shields.io/badge/control%20plane-n8n-EA4B71?style=flat-square&logo=n8n&logoColor=white)](docs/N8N_VIDEO_FACTORY.md)
 [![NAF](https://img.shields.io/badge/NAF-1%20Foundation-7C3AED?style=flat-square)](docs/NAF.md)
+[![License](https://img.shields.io/badge/license-MIT-16A34A?style=flat-square)](LICENSE)
 [![Security](https://img.shields.io/badge/security-human%20review%20required-111827?style=flat-square)](docs/SECURITY.md)
 
 </div>
